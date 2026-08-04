@@ -21,30 +21,17 @@
 
     <!-- FORM HERE -->
     <form method="POST" enctype="multipart/form-data">
+    	{% csrf_token %}
     	<fieldset class="form-group">
+    		<legend class="border-bottom mb-3">Profile Info</legend>
     		{{ u_form | crispy }}
     		{{ p_form | crispy }}
     	</fieldset>
+    	<div class="form-group">
+    		<button class="btn btn-outline-info" type="submit">Update</button>
+    	</div>
     </form>
 </div>
 
 {% endblock content %}
 
-
-
-
-
-
-<form method="POST" enctype="multipart/form-data">
-	
-	{% csrf_token %}
-
-	{{ form }}
-
-	<button type = "submit">
-		Upload
-	</button>
-
-</form>
-
-<img src={{ user.profile.image.url }}>
