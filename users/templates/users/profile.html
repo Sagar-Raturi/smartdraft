@@ -5,33 +5,29 @@
 
 <div class="content-section">
     <div class="d-flex align-items-center">
-
-        {% if user.profile.image %}
-            <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
-        {% else %}
-            <img class="rounded-circle account-img" src="/media/default.jpg">
-        {% endif %}
+        <!-- user.profile.image.url handles both custom and default images -->
+        <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
 
         <div>
-        	<h2 class="account-heading"> {{ user.username }} </h2>
-        	<p class="text-secondary"> {{ user.email }}</p>
+            <h2 class="account-heading"> {{ user.username }} </h2>
+            <p class="text-secondary"> {{ user.email }}</p>
         </div>
     </div>
 
-
     <!-- FORM HERE -->
     <form method="POST" enctype="multipart/form-data">
-    	{% csrf_token %}
-    	<fieldset class="form-group">
-    		<legend class="border-bottom mb-3">Profile Info</legend>
-    		{{ u_form | crispy }}
-    		{{ p_form | crispy }}
-    	</fieldset>
-    	<div class="form-group">
-    		<button class="btn btn-outline-info" type="submit">Update</button>
-    	</div>
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-3">Profile Info</legend>
+            {{ u_form | crispy }}
+            {{ p_form | crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Update</button>
+        </div>
     </form>
 </div>
 
 {% endblock content %}
+
 
