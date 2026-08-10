@@ -20,7 +20,48 @@
       </h2>
 
       <p class="article-content">{{ object.content }}</p>
-    </div>
 
+      <!-- Social Share Buttons -->
+      
+      <div class="mt-4 pt-3 border-top">
+        <h5 class="text-muted mb-3">Share this post:</h5>
+        <div class="d-flex flex-wrap gap-2">
+
+          <!-- WhatsApp -->
+          <a href="https://api.whatsapp.com/send?text={{ post.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}" 
+             target="_blank" 
+             class="btn btn-sm btn-success">
+             <i class="bi bi-whatsapp"></i> WhatsApp
+          </a>
+
+          <!-- Facebook -->
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" 
+             target="_blank" 
+             class="btn btn-sm btn-primary">
+             <i class="bi bi-facebook"></i> Facebook
+          </a>
+
+          <!-- Twitter / X -->
+          <a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}" 
+             target="_blank" 
+             class="btn btn-sm btn-dark">
+             <i class="bi bi-twitter-x"></i> X (Twitter)
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri|urlencode }}" 
+             target="_blank" 
+             class="btn btn-sm btn-secondary">
+             <i class="bi bi-linkedin"></i> LinkedIn
+          </a>
+
+          <!-- Email -->
+          <a href="mailto:?subject={{ post.title|urlencode }}&body=Check out this post: {{ request.build_absolute_uri|urlencode }}" 
+             class="btn btn-sm btn-outline-secondary">
+             <i class="bi bi-envelope"></i> Email
+          </a>
+        </div>
+      </div>
+    </div>
   </article>
 {% endblock content %}
