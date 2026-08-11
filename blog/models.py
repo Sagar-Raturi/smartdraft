@@ -10,6 +10,10 @@ class Post(models.Model):
 	date_posted = models.DateTimeField(default=timezone.now)
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
 	slug = models.SlugField(max_length=250, unique=True)
+	upvotes = models.ManyToManyField(User, related_name='upvoted_posts', blank=True)
+
+	def total_upvotes(self):
+		return self.upvotes.count()
 
 	def save(self, *args, **kwargs):
 		if not self.slug:

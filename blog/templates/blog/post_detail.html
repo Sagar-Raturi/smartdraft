@@ -21,8 +21,36 @@
 
       <p class="article-content">{{ object.content }}</p>
 
+      <!-- Upvote Section -->
+      <div class="mb-3">
+          {% if user.is_authenticated %}
+              <form action="{% url 'upvote-post' object.slug %}" method="POST" class="d-inline">
+                  {% csrf_token %}
+                  {% if user in object.upvotes.all %}
+                      <!-- User has upvoted (Active state) -->
+                      <button type="submit" class="btn btn-primary btn-sm">
+                          <i class="bi bi-hand-thumbs-up-fill"></i> Upvoted
+                          <span class="badge bg-light text-primary ms-1">{{ object.total_upvotes }}</span>
+                      </button>
+                  {% else %}
+                      <!-- User has NOT upvoted -->
+                      <button type="submit" class="btn btn-outline-primary btn-sm">
+                          <i class="bi bi-hand-thumbs-up"></i> Upvote
+                          <span class="badge bg-primary ms-1">{{ object.total_upvotes }}</span>
+                      </button>
+                  {% endif %}
+              </form>
+          {% else %}
+              <!-- Unauthenticated Users -->
+              <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-secondary btn-sm">
+                  <i class="bi bi-hand-thumbs-up"></i> Upvote
+                  <span class="badge bg-secondary ms-1">{{ object.total_upvotes }}</span>
+              </a>
+          {% endif %}
+      </div>
+
       <!-- Social Share Buttons -->
-      
+
       <div class="mt-4 pt-3 border-top">
         <h5 class="text-muted mb-3">Share this post:</h5>
         <div class="d-flex flex-wrap gap-2">
@@ -64,4 +92,6 @@
       </div>
     </div>
   </article>
+
+
 {% endblock content %}
