@@ -45,8 +45,10 @@ a.article-title:hover {
   text-decoration: none;
 }
 
+/* FIX: Changed pre-line to normal for proper Markdown HTML output */
 .article-content {
-  white-space: pre-line;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .article-img {
@@ -59,7 +61,7 @@ a.article-title:hover {
 .article-metadata {
   padding-bottom: 1px;
   margin-bottom: 4px;
-  border-bottom: 1px solid #e3e3e3
+  border-bottom: 1px solid #e3e3e3;
 }
 
 .article-metadata a:hover {
@@ -86,4 +88,31 @@ a.article-title:hover {
 
 a {
   text-decoration: none;
+}
+
+/* FIX: EasyMDE toolbar layout alignment for Bootstrap */
+/* EasyMDE toolbar fixes when using Bootstrap */
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.editor-toolbar button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editor-toolbar button.table {
+    width: 30px;
+    height: 30px;
+}
+
+.editor-toolbar i {
+    line-height: 1;
 }

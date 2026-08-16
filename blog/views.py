@@ -6,6 +6,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 
+import os 
+from django.conf import settings
+from django.http import JsonResponse
+from django.core.files.storage import FileSystemStorage
+
 # # def home(request): 
 # # 	context = {'posts': Post.objects.all()}
 # # 	return render(request, 'blog/home.html', context)
@@ -80,6 +85,26 @@ def upvote_post(request, slug):
 		post.upvotes.add(request.user)
 
 	return redirect(request.META.get('HTTP_REFERER', 'home'))
+
+@login_required
+def upload_image(request):
+    # EasyMDE sends the uploaded file in request.FILES['image']
+    if request.method == 'POST' and request.FILES.get('image'):
+        image = request.FILES['image']
+        
+        upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+        fs = FileSystemStorage(location=upload_dir, base_url=f"{settings.MEDIA_URL}uploads/")
+        filename = fs.save(image.name, image)
+        uploaded_file_url = fs.url(filename)
+
+        # EasyMDE requires this exact JSON response
+        return JsonResponse({
+            "data": {
+                "filePath": uploaded_file_url
+            }
+        })
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 

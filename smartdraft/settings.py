@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'users',
     'crispy_forms',
     'crispy_bootstrap5',
+    'martor',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +134,4 @@ LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'logout'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+

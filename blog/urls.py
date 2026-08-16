@@ -15,4 +15,6 @@ urlpatterns = [
 
     path('post/<slug:slug>/upvote/', views.upvote_post, name='upvote-post'),
 
+    path('upload-image/', views.upload_image, name='upload-image')
+
 ]

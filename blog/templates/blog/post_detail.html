@@ -1,4 +1,6 @@
 {% extends "blog/base.html" %}
+{% load blog_tags %} <!-- Load the filter library -->
+
 {% block content %}
   <article class="d-flex content-section">
 
@@ -19,7 +21,7 @@
         {{ object.title }}
       </h2>
 
-      <p class="article-content">{{ object.content }}</p>
+      <p class="article-content">{{ object.content|markdown}}</p>
 
       <!-- Upvote Section -->
       <div class="mb-3">

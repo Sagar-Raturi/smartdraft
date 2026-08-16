@@ -1,16 +1,90 @@
 {% extends "blog/base.html" %}
 {% load crispy_forms_tags %}
+
 {% block content %}
-	<div class="content-section">
-		<form method="POST">
-			{% csrf_token %}
-			<fieldset class="form-group">
-				<legend class="border-bottom mb-3">Blog Post</legend>
-				{{ form|crispy }}
-			</fieldset>
-			<div class="form-group">
-				<button class="btn btn-outline-info" type="submit">Post</button>
-			</div>
-		</form>
-	</div>
+<!-- 1. Font Awesome 4.7 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- 2. EasyMDE CSS CDN -->
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+
+<!-- 3. CSS Toolbar Alignment Fixes -->
+<style>
+    .EasyMDEContainer .CodeMirror {
+        font-size: 16px !important;
+        font-family: 'Fira Code', 'Consolas', monospace !important;
+        min-height: 350px !important;
+    }
+
+    /* Keep toolbar items floating side-by-side */
+    .editor-toolbar {
+        padding: 4px !important;
+    }
+
+    .editor-toolbar a {
+        display: inline-block !important;
+        float: left !important;
+        clear: none !important;
+        width: 30px !important;
+        height: 30px !important;
+        line-height: 30px !important;
+        text-align: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-sizing: content-box !important;
+    }
+</style>
+
+<div class="content-section">
+    <form method="POST">
+        {% csrf_token %}
+
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-3">Blog Post</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group mt-3">
+            <button class="btn btn-outline-info" type="submit">Post</button>
+        </div>
+    </form>
+</div>
+
+<!-- 4. EasyMDE JS CDN -->
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+<!-- 5. Editor Initialization Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const easymde = new EasyMDE({ 
+            element: document.getElementById('id_content'),
+            autoDownloadFontAwesome: false,
+            uploadImage: true,
+            imageUploadEndpoint: "{% url 'upload-image' %}",
+            csrfToken: csrfToken,
+            imageCSRFToken: csrfToken,
+            imageAccept: "image/png, image/jpeg, image/gif, image/webp",
+            toolbar: [
+                "bold", "italic", "heading", "|", 
+                "quote", "unordered-list", "ordered-list", 
+                /* Custom Table Action: Uses 'fa-th' to prevent Bootstrap '.table' conflict */
+                {
+                    name: "table",
+                    action: EasyMDE.drawTable,
+                    className: "fa fa-table",
+                    title: "Insert Table"
+                }, 
+                "|", 
+                "link", "upload-image", "code", "|", 
+                "preview", "side-by-side", "fullscreen", "|", 
+                "guide"
+            ],
+            spellChecker: false,
+            placeholder: "Write your content here in Markdown..."
+        });
+    });
+</script>
+
 {% endblock content %}
