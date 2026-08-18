@@ -60,6 +60,7 @@
 
         const easymde = new EasyMDE({ 
             element: document.getElementById('id_content'),
+            forceSync: true, /* <-- ADD THIS: Guarantees textarea gets updated immediately */
             autoDownloadFontAwesome: false,
             uploadImage: true,
             imageUploadEndpoint: "{% url 'upload-image' %}",
@@ -69,11 +70,10 @@
             toolbar: [
                 "bold", "italic", "heading", "|", 
                 "quote", "unordered-list", "ordered-list", 
-                /* Custom Table Action: Uses 'fa-th' to prevent Bootstrap '.table' conflict */
                 {
                     name: "table",
                     action: EasyMDE.drawTable,
-                    className: "fa fa-table",
+                    className: "fa fa-th",
                     title: "Insert Table"
                 }, 
                 "|", 

@@ -42,7 +42,14 @@ INSTALLED_APPS = [
     'users',
     'crispy_forms',
     'crispy_bootstrap5',
-    'martor',
+    
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.twitter_oauth2',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +60,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+     # Add the account middleware:
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'smartdraft.urls'
@@ -126,7 +136,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-CRISPY_ALLOWED_TEMPLATE_PACK = 'bootstrap5',
+CRISPY_ALLOWED_TEMPLATE_PACK = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 LOGIN_REDIRECT_URL = 'home'
@@ -135,3 +145,50 @@ LOGOUT_REDIRECT_URL = 'logout'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Provider specific settings
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online','prompt': 'select_account',},
+        'EMAIL_AUTHENTICATION': True},
+
+    'facebook': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email', 'public_profile'],
+        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name', 'picture'],
+        'EMAIL_AUTHENTICATION': True},
+
+    'github': {
+        'SCOPE': ['user', 'user:email'],
+        'AUTH_PARAMS': {'access_type': 'online','prompt': 'consent',},
+        'EMAIL_AUTHENTICATION': True},
+
+    'twitter_oauth2': {
+        'AUTH_PARAMS': {'access_type': 'online',},
+        'SCOPE': ['users.read', 'tweet.read', 'offline.access'],
+        'EMAIL_AUTHENTICATION': True}
+                    }
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+SITE_ID = 1
+
+ACCOUNT_ADAPTER = 'users.adapters.MyAccountAdapter'
+
+ACCOUNT_EMAIL_REQUIRED = True 
+SOCIALACCOUNT_EMAIL_REQUIRED = True 
+SOCIALACCOUNT_STORE_TOKENS = True 
+
+ACCOUNT_UNIQUE_EMAIL = True
