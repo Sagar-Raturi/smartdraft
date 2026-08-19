@@ -18,6 +18,8 @@ env = Env()
 env.read_env()
 ENVIRONMENT = env('ENVIRONMENT', default='production')
 
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -99,12 +101,19 @@ WSGI_APPLICATION = 'smartdraft.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if ENVIRONMENT == 'development':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            env('DATABASE_URL')
+        )
+    }
 
 
 # Password validation
@@ -202,7 +211,7 @@ ACCOUNT_ADAPTER = 'users.adapters.MyAccountAdapter'
 # ACCOUNT_EMAIL_REQUIRED = True 
 SOCIALACCOUNT_EMAIL_REQUIRED = True 
 SOCIALACCOUNT_STORE_TOKENS = True 
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+# ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 
 ACCOUNT_UNIQUE_EMAIL = True
 
