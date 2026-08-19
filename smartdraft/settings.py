@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 
+from environ import Env 
+env = Env()
+env.read_env()
+ENVIRONMENT = env('ENVIRONMENT', default='production')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dt2p2wn&avsa+zeizbf6_ol*z4jt&z$v#o2xubajwakly35b9e'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if ENVIRONMENT == 'development':
+    DEBUG = True
+else:
+    DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -50,6 +58,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.twitter_oauth2',
+
+    'admin_honeypot',
 ]
 
 MIDDLEWARE = [
@@ -187,8 +197,12 @@ SITE_ID = 1
 
 ACCOUNT_ADAPTER = 'users.adapters.MyAccountAdapter'
 
-ACCOUNT_EMAIL_REQUIRED = True 
+# ACCOUNT_EMAIL_REQUIRED = True 
 SOCIALACCOUNT_EMAIL_REQUIRED = True 
 SOCIALACCOUNT_STORE_TOKENS = True 
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 
 ACCOUNT_UNIQUE_EMAIL = True
+
+# related to deployment
+ACCOUNT_USERNAME_BLACKLIST = ['admin', 'users', 'post', 'profile', 'theboss']

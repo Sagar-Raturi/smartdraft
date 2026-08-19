@@ -5,40 +5,27 @@
 {% block content %}
 
 <div class="row justify-content-center">
-
     <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-
         <div class="content-section login-card">
 
             <!-- Login Form -->
             <form method="POST">
-
                 {% csrf_token %}
-
                 <fieldset class="form-group">
-
                     <legend class="login-title border-bottom mb-4 pb-3">
                         Login
                     </legend>
-
                     {{ form|crispy }}
-
                 </fieldset>
-
 
                 <!-- Login Actions -->
                 <div class="login-actions">
-
                     <button
-                        class="btn btn-outline-info login-btn"
-                        type="submit">
-
-                        Login
-
+                        class="btn btn-outline-info login-btn" type="submit"> Login
                     </button>
 
                     <a
-                        href="#"
+                        href="{% url 'password_reset' %}"
                         class="forgot-password">
 
                         Forgot Password?
