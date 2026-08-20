@@ -12,11 +12,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 from environ import Env 
 env = Env()
 env.read_env()
-ENVIRONMENT = env('ENVIRONMENT', default='production')
+ENVIRONMENT = env('ENVIRONMENT', default='development')
 
 import dj_database_url
 
@@ -34,7 +35,7 @@ SECRET_KEY = env('SECRET_KEY')
 if ENVIRONMENT == 'development':
     DEBUG = True
 else:
-    DEBUG = False
+    DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -154,14 +155,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "django.core.files.storage.FileSystemStorage",
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -213,7 +214,13 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
-SITE_ID = 1
+
+# 2. Detect if running locally via 'python manage.py runserver'
+if ENVIRONMENT == 'development':
+    SITE_ID = 1
+else:
+    SITE_ID = 2
+
 
 ACCOUNT_ADAPTER = 'users.adapters.MyAccountAdapter'
 
@@ -227,4 +234,4 @@ ACCOUNT_UNIQUE_EMAIL = True
 # related to deployment
 ACCOUNT_USERNAME_BLACKLIST = ['admin', 'users', 'post', 'profile', 'theboss']
 
-INTERNAL_IPS = ('127.0.0.1', 'localhost:8000')
+INTERNAL_IPS = ['127.0.0.1', 'localhost:8000']
