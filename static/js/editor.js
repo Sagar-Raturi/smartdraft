@@ -70,6 +70,13 @@ document.addEventListener('DOMContentLoaded', function () {
         imageUploadEndpoint: uploadEndpoint,
         csrfToken: csrfToken,
         imageCSRFToken: csrfToken,
+        // Our upload endpoint already returns a full, ready-to-use URL
+        // (an absolute Cloudinary URL in production, a root-relative
+        // /media/... path in dev). Without this, EasyMDE prepends
+        // window.location.origin to it, producing a broken, doubled-up
+        // URL like "https://yoursite.com/https://res.cloudinary.com/..."
+        // -- which is why the image failed to render inline.
+        imagePathAbsolute: true,
         imageAccept: 'image/png, image/jpeg, image/gif, image/webp',
         imageMaxSize: 5 * 1024 * 1024, // keep in sync with MAX_IMAGE_UPLOAD_SIZE in views.py
         errorCallback: showError,

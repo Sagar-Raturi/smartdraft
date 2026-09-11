@@ -4,12 +4,15 @@ import tempfile
 
 from PIL import Image
 from django.contrib.auth.models import User
+from django.core.files.storage import Storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from .management.commands.fix_broken_image_urls import BROKEN_IMAGE_URL_RE
 from .markdown_utils import render_markdown_safe
 from .templatetags.blog_tags import markdown_excerpt
+from .models import Post
 
 TEST_MEDIA_ROOT = tempfile.mkdtemp()
 
@@ -26,6 +29,39 @@ def make_png_bytes():
     Image.new('RGB', (10, 10), color='red').save(buf, format='PNG')
     buf.seek(0)
     return buf.read()
+
+
+class FakeAbsoluteURLStorage(Storage):
+    """Stands in for MediaCloudinaryStorage in tests: stores bytes in memory
+    but, like Cloudinary, .url() returns a fully-qualified absolute URL
+    rather than a site-relative path. Lets us prove the upload -> Markdown
+    -> render pipeline behaves correctly against that shape of URL without
+    making a real network call to Cloudinary.
+    """
+
+    _files = {}
+
+    def _save(self, name, content):
+        self._files[name] = content.read()
+        return name
+
+    def exists(self, name):
+        return name in self._files
+
+    def url(self, name):
+        return f'https://fake-cdn.example.com/{name}'
+
+    def size(self, name):
+        return len(self._files.get(name, b''))
+
+    def get_available_name(self, name, max_length=None):
+        return name
+
+
+ABSOLUTE_URL_STORAGES = {
+    'default': {'BACKEND': 'blog.tests.FakeAbsoluteURLStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+}
 
 
 class MarkdownRenderingTests(TestCase):
@@ -150,3 +186,51 @@ class RenderPreviewViewTests(TestCase):
         html = response.json()['html']
         self.assertIn('<h1', html)
         self.assertNotIn('<script', html)
+
+
+@override_settings(STORAGES=ABSOLUTE_URL_STORAGES)
+class ImageUploadEndToEndTests(TestCase):
+    """Proves the full pipeline against an absolute-URL storage backend --
+    the exact shape Cloudinary uses in production -- without hitting the
+    real Cloudinary API.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='author3', password='pw12345')
+
+    def setUp(self):
+        FakeAbsoluteURLStorage._files.clear()
+        self.client.login(username='author3', password='pw12345')
+
+    def test_uploaded_image_renders_inline_in_the_published_post(self):
+        upload = SimpleUploadedFile('photo.png', make_png_bytes(), content_type='image/png')
+        response = self.client.post(reverse('upload-image'), {'image': upload})
+        self.assertEqual(response.status_code, 200)
+
+        file_path = response.json()['data']['filePath']
+        self.assertTrue(file_path.startswith('https://fake-cdn.example.com/'))
+
+        # This is exactly what EasyMDE inserts into the textarea with
+        # imagePathAbsolute: true -- filePath used as-is, no origin prefix.
+        markdown_source = f'![]({file_path})'
+
+        post = Post.objects.create(title='Test post', content=markdown_source, author=self.user)
+        html = render_markdown_safe(post.content)
+
+        self.assertIn(f'<img alt="" src="{file_path}">', html)
+
+    def test_without_imagepathabsolute_the_url_would_have_been_broken(self):
+        # Documents the bug we fixed: this is what the OLD editor.js config
+        # (imagePathAbsolute defaulting to false) would have produced --
+        # confirms the repair regex in fix_broken_image_urls recognizes it.
+        upload = SimpleUploadedFile('photo.png', make_png_bytes(), content_type='image/png')
+        response = self.client.post(reverse('upload-image'), {'image': upload})
+        file_path = response.json()['data']['filePath']
+
+        broken_markdown = f'![](https://yoursite.com/{file_path})'
+        self.assertRegex(broken_markdown, BROKEN_IMAGE_URL_RE)
+
+        fixed_markdown = BROKEN_IMAGE_URL_RE.sub(r'![\1](\2)', broken_markdown)
+        self.assertEqual(fixed_markdown, f'![]({file_path})')
