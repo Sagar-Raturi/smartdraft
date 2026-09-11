@@ -1,0 +1,47 @@
+/* =========================================================
+   MARKDOWN EDITOR (EasyMDE) — post_form.html
+   ========================================================= */
+
+.EasyMDEContainer .CodeMirror {
+    font-size: 16px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    min-height: 350px;
+}
+
+/* Keep toolbar items floating side-by-side and aligned with Bootstrap */
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 4px;
+}
+
+.editor-toolbar a,
+.editor-toolbar button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    float: none !important;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    padding: 0;
+    margin: 0 2px;
+    border: none;
+    box-sizing: content-box;
+}
+
+.editor-toolbar i {
+    line-height: 1;
+}
+
+/* Word count / reading time strip under the editor */
+.editor-status-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1em;
+    padding: 6px 4px 0;
+    color: #8a8f98;
+    font-size: 0.85rem;
+}

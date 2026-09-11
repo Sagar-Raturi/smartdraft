@@ -1,7 +1,9 @@
 {% extends "blog/base.html" %}
-{% load blog_tags %} <!-- Load the filter library -->
+{% load blog_tags static %} <!-- Load the filter library -->
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/pygments.css' %}">
+
   <article class="d-flex content-section">
 
     <img class="rounded-circle article-img me-3"
@@ -21,7 +23,7 @@
         {{ object.title }}
       </h2>
 
-      <p class="article-content">{{ object.content|markdown}}</p>
+      <div class="article-content">{{ object.content|markdown }}</div>
 
       <!-- Upvote Section -->
       <div class="mb-3">
