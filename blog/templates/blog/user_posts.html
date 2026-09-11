@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load blog_tags %}
 {% block content %}
 	<h1 class="mb-3">Posts by {{ view.kwargs.username }}</h1>
 	{% for post in posts %}
@@ -11,7 +12,8 @@
 				</div>
 
 				<h2><a class="article-title" href="{% url 'post-detail' post.slug %}">{{ post.title }}</a></h2>
-				<p class="article-content"> {{ post.content }}</p>
+				<p class="article-excerpt">{{ post.content|markdown_excerpt:40 }}</p>
+				<a class="read-more" href="{% url 'post-detail' post.slug %}">Read more &rarr;</a>
 			</div>
 		</article>
 	{% endfor %}

@@ -12,7 +12,8 @@
 			</div>
 
 			<h2><a class="article-title" href="{% url 'post-detail' post.slug %}">{{ post.title }}</a></h2>
-			<p class="article-content">{{ post.content|markdown }} </p>
+			<p class="article-excerpt">{{ post.content|markdown_excerpt:40 }}</p>
+			<a class="read-more" href="{% url 'post-detail' post.slug %}">Read more &rarr;</a>
 		</div>
 	</article>
 	{% endfor %}

@@ -5,11 +5,26 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 
-import os 
-from django.conf import settings
+import uuid
+from PIL import Image, UnidentifiedImageError
+from django.core.files.storage import default_storage
 from django.http import JsonResponse
-from django.core.files.storage import FileSystemStorage
+
+from .markdown_utils import render_markdown_safe
+
+# Server-side guardrails for the Markdown editor's image upload. The client
+# already restricts the file picker to these types, but that's only a UX
+# hint -- an attacker can send any bytes with any Content-Type header, so
+# everything here is re-checked against the actual file.
+ALLOWED_IMAGE_TYPES = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+}
+MAX_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
 
 # # def home(request): 
 # # 	context = {'posts': Post.objects.all()}
@@ -87,24 +102,59 @@ def upvote_post(request, slug):
 	return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 @login_required
+@require_POST
 def upload_image(request):
     # EasyMDE sends the uploaded file in request.FILES['image']
-    if request.method == 'POST' and request.FILES.get('image'):
-        image = request.FILES['image']
-        
-        upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
-        fs = FileSystemStorage(location=upload_dir, base_url=f"{settings.MEDIA_URL}uploads/")
-        filename = fs.save(image.name, image)
-        uploaded_file_url = fs.url(filename)
+    image = request.FILES.get('image')
+    if not image:
+        return JsonResponse({'error': 'No image provided.'}, status=400)
 
-        # EasyMDE requires this exact JSON response
-        return JsonResponse({
-            "data": {
-                "filePath": uploaded_file_url
-            }
-        })
-    
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    if image.size > MAX_IMAGE_UPLOAD_SIZE:
+        return JsonResponse({'error': 'Image is too large (max 5MB).'}, status=400)
+
+    extension = ALLOWED_IMAGE_TYPES.get(image.content_type)
+    if not extension:
+        return JsonResponse({'error': 'Unsupported image type.'}, status=400)
+
+    # Confirm the bytes are actually a valid image of the claimed type
+    # (a browser-set Content-Type header can't be trusted on its own).
+    try:
+        with Image.open(image) as img:
+            img.verify()
+    except (UnidentifiedImageError, OSError):
+        return JsonResponse({'error': 'File is not a valid image.'}, status=400)
+    finally:
+        image.seek(0)
+
+    # Random filename: never trust the client-supplied name (path traversal,
+    # collisions, unicode/control characters).
+    filename = f"uploads/{uuid.uuid4().hex}.{extension}"
+
+    # default_storage resolves to whatever STORAGES["default"] is configured
+    # to (Cloudinary in production, local disk in dev) -- unlike a
+    # hardcoded FileSystemStorage, this actually persists in production.
+    saved_name = default_storage.save(filename, image)
+    uploaded_file_url = default_storage.url(saved_name)
+
+    # EasyMDE requires this exact JSON response
+    return JsonResponse({
+        "data": {
+            "filePath": uploaded_file_url
+        }
+    })
+
+
+@login_required
+@require_POST
+def render_preview(request):
+    """Render Markdown source exactly the way a published post would.
+
+    Used by the editor's live preview so what the author sees while
+    writing matches the real post (same extensions, same sanitizer),
+    instead of EasyMDE's bundled client-side Markdown parser.
+    """
+    text = request.POST.get('text', '')
+    return JsonResponse({'html': render_markdown_safe(text)})
 
 
 
